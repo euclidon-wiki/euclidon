@@ -10,3 +10,27 @@ edition = "2021"
 rust-version = "1.84.0"
 
 [dependencies]
+# general
+thiserror = "2.0.11"
+
+# config
+dotenvy = "0.15.7"
+
+# runtime
+tokio = { version = "1.43.0", features = [
+    "rt-multi-thread",
+    "macros",
+    "net",
+    "fs",
+] }
+
+# net & web
+axum = { version = "0.8.1", default-features = false, features = [
+    "macros",
+    "tokio",
+    "http1",
+    "http2",
+    "multipart",
+    "query",
+    "form",
+] }
