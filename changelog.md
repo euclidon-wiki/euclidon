@@ -45,6 +45,11 @@
     * `pub fn load() -> Result<Self, Error>`
         * Equivalent to `Config::builder().build()`.
 
+##### `pub mod euclidon::controllers`
+* Created module.
+* Contains all method handlers for different routes. Each route is mapped to a corresponding submodule, and each submodule contains controllers for the same route with different methods such as `GET` or `POST`.
+* Route to controller mapping is as follows:
+    * `/` to `root::get` with `GET`
 
 #### Internal changes
 * Set Rust compilation version at v1.84.0 and edition to 2021.

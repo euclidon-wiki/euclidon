@@ -1,16 +1,11 @@
 use std::sync::Arc;
 
-use axum::{debug_handler, response::IntoResponse, routing::get, Router};
+use axum::{routing::get, Router};
 
-use crate::{App, AppState};
+use crate::{controllers::root, App, AppState};
 
 pub fn build_router(app: Arc<App>) -> Router {
     Router::new()
-        .route("/", get(root))
+        .route("/", get(root::get))
         .with_state(AppState(app))
-}
-
-#[debug_handler(state = AppState)]
-async fn root(AppState(_): AppState) -> impl IntoResponse {
-    "Hello, world!"
 }
