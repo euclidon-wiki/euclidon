@@ -1,6 +1,12 @@
 [package]
 name = "euclidon"
 version = "0.1.0"
+
+authors = ["Ahraman <ahraman.programming@gmail.com>"]
+description = "A wiki software oriented towards mathematical and scientific encyclopediae."
+license = "MIT OR Apache-2.0"
+
 edition = "2021"
+rust-version = "1.84.0"
 
 [dependencies]
