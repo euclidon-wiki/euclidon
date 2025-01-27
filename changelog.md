@@ -4,6 +4,13 @@
 
 ### v0.1.0
 
+#### API changes
+* Added `enum euclidon::Error`
+    * The generic error type used throughout `euclidon`.
+    * Derives implementations for `trait Debug` and `trait thiserror::Error`.
+    * Implements `trait axum::response::IntoResponse`, so it can be used in HTTP method handlers.
+    * Wraps over various error types thrown by other modules or crates, and has `trait From<...>` implementations for all of them.
+
 #### Internal changes
 * Set Rust compilation version at v1.84.0 and edition to 2021.
 * Added the following crates as dependencies:
