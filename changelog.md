@@ -6,8 +6,8 @@
 
 #### API changes
 
-##### `pub mod euclidon`
-* Created module.
+##### Crate `euclidon`
+* Created crate.
 * Added `enum Error`
     * Defined in `mod euclidon::error`.
     * The generic error type used throughout `euclidon` crate.
@@ -16,6 +16,10 @@
     * Wraps over various error types thrown by other modules or crates, and has `trait From<...>` implementations for all of them.
 * Added alias `App = struct app::App`.
 * Added alias `AppState = struct app::AppState`.
+* Added `pub fn build_router(app: Arc<App>) -> axum::Router`
+    * Defined in `mod euclidon::router`.
+    * Constructs an axum router with the provided `app` instance as its state.
+    * State can be extracted via the custom `AppState` extractor.
 
 ##### `pub mod euclidon::app`
 * Created module.
