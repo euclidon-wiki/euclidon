@@ -10,3 +10,4 @@
     * [`tokio`](https://docs.rs/tokio) v1.43.0 with features: `rt-multi-thread`, `macros`, `net`, `fs`
     * [`axum`](https://docs.rs/axum) v0.8.1 with features: `macros`, `tokio`, `http2`, `multipart`, `query`, `form`
     * [`dotenvy`](https://docs.rs/dotenvy) v0.15.7
+    * [`thiserror`](https://docs.rs/thiserror) v2.0.11
