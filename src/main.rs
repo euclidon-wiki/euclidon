@@ -1,28 +1,18 @@
-use std::env;
+use std::sync::Arc;
 
-use axum::{
-    debug_handler,
-    response::{IntoResponse, Response},
-    routing::get,
-    Router,
-};
-use euclidon::Error;
+use euclidon::{app::Config, App, Error};
 use tokio::net::TcpListener;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     _ = dotenvy::dotenv()?;
 
-    let router = Router::new().route("/", get(root));
+    let app = Arc::new(App::new(Config::load()?)?);
+    let router = euclidon::build_router(app.clone());
 
-    let server_url = env::var("SERVER_URL")?;
-    let listener = TcpListener::bind(&server_url).await?;
+    let server_url = &app.config.server_url;
+    let listener = TcpListener::bind(server_url).await?;
 
     println!("> server listening on: {server_url}");
     Ok(axum::serve(listener, router).await?)
-}
-
-#[debug_handler]
-async fn root() -> Result<Response, Error> {
-    Ok("Hello, world!".into_response())
 }
