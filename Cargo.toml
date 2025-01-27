@@ -28,6 +28,7 @@ tokio = { version = "1.43.0", features = [
 axum = { version = "0.8.1", default-features = false, features = [
     "macros",
     "tokio",
+    "http1",
     "http2",
     "multipart",
     "query",
