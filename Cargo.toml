@@ -10,6 +10,9 @@ edition = "2021"
 rust-version = "1.84.0"
 
 [dependencies]
+# config
+dotenvy = "0.15.7"
+
 # runtime
 tokio = { version = "1.43.0", features = [
     "rt-multi-thread",
