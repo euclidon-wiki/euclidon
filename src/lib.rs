@@ -1,4 +1,5 @@
 pub mod app;
+pub mod asset;
 pub mod controllers;
 pub mod db;
 mod error;
