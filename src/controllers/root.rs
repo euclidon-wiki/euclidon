@@ -1,11 +1,17 @@
 use axum::{
     debug_handler,
-    response::{IntoResponse, Response},
+    response::{Html, IntoResponse, Response},
 };
+use serde_json::json;
+use tera::Context;
 
-use crate::Error;
+use crate::{AppState, Error};
 
 #[debug_handler(state = AppState)]
-pub async fn get() -> Result<Response, Error> {
-    Ok("Hello, world!".into_response())
+pub async fn get(AppState(app): AppState) -> Result<Response, Error> {
+    Ok(Html::from(
+        app.renderer
+            .render("index", &Context::from_serialize(json!({}))?)?,
+    )
+    .into_response())
 }
