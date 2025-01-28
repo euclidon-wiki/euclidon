@@ -3,3 +3,6 @@
 # The .env environment file used to configure a server. This should be locally configured and is 
 # not something to be uploaded online.
 /.env
+
+# editor files
+/.vscode
