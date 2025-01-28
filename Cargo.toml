@@ -41,3 +41,9 @@ axum = { version = "0.8.1", default-features = false, features = [
 ] }
 
 # database
+diesel = { version = "2.2.6", default-features = false, features = [
+    "with-deprecated",
+    "chrono",
+    "postgres",
+    "r2d2",
+] }
