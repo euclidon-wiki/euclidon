@@ -2,6 +2,7 @@ pub mod app;
 pub mod controllers;
 pub mod db;
 mod error;
+pub mod render;
 mod router;
 
 pub use self::{

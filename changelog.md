@@ -65,11 +65,28 @@
 * Added `type ConnMan = ConnectionManager<AnyConn>`
     * A type alias used to shorten the name of the connection manager type, and doubles as a pun.
 
+##### `pub mod euclidon::render`
+* Created module.
+* Added `struct Renderer`
+    * Uses `tera` to render HTML templates.
+    * `pub fn new() -> Result<Self, Error>`
+        * Constructs a new instance with templates already loaded.
+        * Currently hard-coded but soon should dynamically detect templates instead.
+    * `pub fn render(&self, name: &str, context: &Context) -> Result<String, Error>`
+        * Renders the registered template `name` with the provided `context`.
+
+
 ##### `pub mod euclidon::controllers`
 * Created module.
 * Contains all method handlers for different routes. Each route is mapped to a corresponding submodule, and each submodule contains controllers for the same route with different methods such as `GET` or `POST`.
 * Route to controller mapping is as follows:
     * `/` to `root::get` with `GET`
+
+#### UI changes
+
+##### Templates
+* Euclidon uses the `tera` crate for rendering templates.
+* Currently in early stages.
 
 #### Internal changes
 * Set Rust compilation version at v1.84.0 and edition to 2021.

@@ -2,12 +2,14 @@ use std::{ops::Deref, sync::Arc};
 
 use axum::extract::{FromRequestParts, State};
 
-use crate::{db::Db, Error};
+use crate::{db::Db, render::Renderer, Error};
 
 use self::detail::ConfigBuilder;
 
 pub struct App {
     pub db: Db,
+    pub renderer: Renderer,
+
     pub config: Config,
 }
 
@@ -15,6 +17,8 @@ impl App {
     pub fn new(config: Config) -> Result<Self, Error> {
         Ok(Self {
             db: Db::new(&config)?,
+            renderer: Renderer::new()?,
+
             config,
         })
     }
