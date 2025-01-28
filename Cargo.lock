@@ -302,6 +302,7 @@ dependencies = [
  "chrono",
  "diesel",
  "dotenvy",
+ "serde",
  "thiserror",
  "tokio",
 ]
