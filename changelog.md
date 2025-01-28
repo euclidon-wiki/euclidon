@@ -25,6 +25,8 @@
 * Created module.
 * Added `struct App`
     * Represents the global data of a server instance.
+    * `pub db: Db`
+        * Manages connections to the database.
     * `pub config: Config`
         * Contains server configuration.
     * `pub fn new(config: Config) -> Result<Self, Error>`
@@ -44,6 +46,24 @@
         * Returns a builder. The builder type is hidden in the private module `app::detail`.
     * `pub fn load() -> Result<Self, Error>`
         * Equivalent to `Config::builder().build()`.
+
+##### `pub mod euclidon::db`
+* Created module.
+* Added `struct Db`
+    * Manages connections to the database through an `r2d2::Pool` instance.
+    * `pub fn new(config: &Config) -> Result<Self, Error>`
+        * Constructs an instance with the given configuration.
+        * Specifically, the configuration decides the database URL via its `config.database_url` field.
+    * `pub fn conn(&self) -> Result<PooledConnection<ConnMan>, Error>`
+        * Returns a usable connection from the pool.
+        * Could fail if all connections are occupied or else some problem occurs.
+* Added `enum AnyConn`
+    * A backend-agnostic version of a diesel connection.
+    * Dervies `diesel::MultiConnection`, which propogates function calls down to the enum variants.
+    * `Pg(PgConnection)`
+        * Variant used for Postgres backend.
+* Added `type ConnMan = ConnectionManager<AnyConn>`
+    * A type alias used to shorten the name of the connection manager type, and doubles as a pun.
 
 ##### `pub mod euclidon::controllers`
 * Created module.

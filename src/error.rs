@@ -9,6 +9,9 @@ pub enum Error {
 
     #[error(transparent)]
     Dotenvy(#[from] dotenvy::Error),
+
+    #[error(transparent)]
+    Pool(#[from] diesel::r2d2::PoolError),
 }
 
 impl IntoResponse for Error {

@@ -2,17 +2,21 @@ use std::{ops::Deref, sync::Arc};
 
 use axum::extract::{FromRequestParts, State};
 
-use crate::Error;
+use crate::{db::Db, Error};
 
 use self::detail::ConfigBuilder;
 
 pub struct App {
+    pub db: Db,
     pub config: Config,
 }
 
 impl App {
     pub fn new(config: Config) -> Result<Self, Error> {
-        Ok(Self { config })
+        Ok(Self {
+            db: Db::new(&config)?,
+            config,
+        })
     }
 }
 
@@ -30,6 +34,7 @@ impl Deref for AppState {
 
 pub struct Config {
     pub server_url: String,
+    pub database_url: String,
 }
 
 impl Config {
@@ -49,6 +54,7 @@ mod detail {
     #[derive(Default)]
     pub struct ConfigBuilder {
         server_url: Option<String>,
+        database_url: Option<String>,
     }
 
     impl ConfigBuilder {
@@ -57,6 +63,9 @@ mod detail {
                 server_url: self
                     .server_url
                     .map_or_else(|| std::env::var("SERVER_URL"), Ok)?,
+                database_url: self
+                    .database_url
+                    .map_or_else(|| std::env::var("DATABASE_URL"), Ok)?,
             })
         }
 
