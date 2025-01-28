@@ -12,6 +12,12 @@ rust-version = "1.84.0"
 [dependencies]
 # general
 thiserror = "2.0.11"
+serde = { version = "1.0.217", features = ["derive"] }
+chrono = { version = "0.4.39", default-features = false, features = [
+    "std",
+    "clock",
+    "serde",
+] }
 
 # config
 dotenvy = "0.15.7"
@@ -33,4 +39,12 @@ axum = { version = "0.8.1", default-features = false, features = [
     "multipart",
     "query",
     "form",
+] }
+
+# database
+diesel = { version = "2.2.6", default-features = false, features = [
+    "with-deprecated",
+    "chrono",
+    "postgres",
+    "r2d2",
 ] }

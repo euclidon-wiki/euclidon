@@ -25,6 +25,8 @@
 * Created module.
 * Added `struct App`
     * Represents the global data of a server instance.
+    * `pub db: Db`
+        * Manages connections to the database.
     * `pub config: Config`
         * Contains server configuration.
     * `pub fn new(config: Config) -> Result<Self, Error>`
@@ -45,6 +47,24 @@
     * `pub fn load() -> Result<Self, Error>`
         * Equivalent to `Config::builder().build()`.
 
+##### `pub mod euclidon::db`
+* Created module.
+* Added `struct Db`
+    * Manages connections to the database through an `r2d2::Pool` instance.
+    * `pub fn new(config: &Config) -> Result<Self, Error>`
+        * Constructs an instance with the given configuration.
+        * Specifically, the configuration decides the database URL via its `config.database_url` field.
+    * `pub fn conn(&self) -> Result<PooledConnection<ConnMan>, Error>`
+        * Returns a usable connection from the pool.
+        * Could fail if all connections are occupied or else some problem occurs.
+* Added `enum AnyConn`
+    * A backend-agnostic version of a diesel connection.
+    * Dervies `diesel::MultiConnection`, which propogates function calls down to the enum variants.
+    * `Pg(PgConnection)`
+        * Variant used for Postgres backend.
+* Added `type ConnMan = ConnectionManager<AnyConn>`
+    * A type alias used to shorten the name of the connection manager type, and doubles as a pun.
+
 ##### `pub mod euclidon::controllers`
 * Created module.
 * Contains all method handlers for different routes. Each route is mapped to a corresponding submodule, and each submodule contains controllers for the same route with different methods such as `GET` or `POST`.
@@ -54,7 +74,10 @@
 #### Internal changes
 * Set Rust compilation version at v1.84.0 and edition to 2021.
 * Added the following crates as dependencies:
-    * [`tokio`](https://docs.rs/tokio) v1.43.0 with features: `rt-multi-thread`, `macros`, `net`, `fs`
-    * [`axum`](https://docs.rs/axum) v0.8.1 with features: `macros`, `tokio`, `http1`, `http2`, `multipart`, `query`, `form`
-    * [`dotenvy`](https://docs.rs/dotenvy) v0.15.7
-    * [`thiserror`](https://docs.rs/thiserror) v2.0.11
+    * [`tokio`](https://docs.rs/tokio/1.43.0) v1.43.0 with features: `rt-multi-thread`, `macros`, `net`, `fs`
+    * [`axum`](https://docs.rs/axum/0.8.1) v0.8.1 with features: `macros`, `tokio`, `http1`, `http2`, `multipart`, `query`, `form`
+    * [`dotenvy`](https://docs.rs/dotenvy/0.15.7) v0.15.7
+    * [`thiserror`](https://docs.rs/thiserror/2.0.11) v2.0.11
+    * [`chrono`](https://docs.rs/chrono/0.4.39) v0.4.39 with features: `std`, `clock`, `serde`
+    * [`diesel`](https://docs.rs/diesel/2.2.6) v2.2.6 with features: `with-deprecated`, `chrono`, `postgres`, `r2d2`
+    * [`serde`](https://docs.rs/serde/1.0.217) v1.0.217 with features: `std` (default), `derive`
