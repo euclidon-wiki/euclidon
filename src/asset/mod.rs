@@ -1,14 +1,15 @@
 mod error;
 mod loc;
 
-use std::{collections::HashMap, iter::once, path::PathBuf};
+use std::{collections::HashMap, fs, iter::once, path::PathBuf};
 
-use error::AssetError;
-use tokio::fs;
-
-pub use self::loc::{Loc, Ns};
+pub use self::{
+    error::AssetError,
+    loc::{Loc, Ns},
+};
 use crate::app::Config;
 
+#[derive(Debug, Clone)]
 pub struct Asset {
     pub data: Box<[u8]>,
 }
@@ -29,9 +30,9 @@ impl Assets {
         Self { namespaces }
     }
 
-    pub async fn load(&self, loc: Loc) -> Result<Asset, AssetError> {
+    pub fn load(&self, loc: Loc) -> Result<Asset, AssetError> {
         let path = self.path_of(&loc)?;
-        Ok(Asset::new(fs::read(path).await?.into_boxed_slice()))
+        Ok(Asset::new(fs::read(path)?.into_boxed_slice()))
     }
 
     pub fn path_of(&self, loc: &Loc) -> Result<PathBuf, AssetError> {

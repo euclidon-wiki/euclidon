@@ -19,7 +19,7 @@ impl App {
         let assets = Assets::new(&config);
         Ok(Self {
             db: Db::new(&config)?,
-            renderer: Renderer::new()?,
+            renderer: Renderer::new(&assets)?,
             assets,
 
             config,

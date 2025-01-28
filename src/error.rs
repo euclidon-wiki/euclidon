@@ -1,7 +1,12 @@
 use axum::response::{IntoResponse, Response};
 
+use crate::asset::AssetError;
+
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error(transparent)]
+    Asset(#[from] AssetError),
+
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error(transparent)]
