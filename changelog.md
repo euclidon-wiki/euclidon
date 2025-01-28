@@ -25,10 +25,12 @@
 * Created module.
 * Added `struct App`
     * Represents the global data of a server instance.
-    * `pub db: Db`
-        * Manages connections to the database.
     * `pub config: Config`
         * Contains server configuration.
+    * `pub assets: Assets`
+        * Manages server-side assets.
+    * `pub db: Db`
+        * Manages connections to the database.
     * `pub fn new(config: Config) -> Result<Self, Error>`
         * Constructs an app with the given configuration.
         * On failure returns `Err(euclidon::Error)`.
@@ -41,7 +43,11 @@
     * `pub server_url: String`
         * The URL of the server.
         * Default value is loaded from environmental variable `SERVER_URL` that can be changed via the .env file.
-        * Alternatively, set using `.server_url(server_url: String)` function of builder.
+        * Alternatively, set using `.server_url(server_url: String)` function from the builder.
+    * `pub assets_dir: PathBuf`
+        * Path of the main assets directory.
+        * Default value is `assets/euclidon`.
+        * Alternatively, set using `.assets_dir(assets_dir: PathBuf)` function from the builder.
     * `pub fn builder() -> ConfigBuilder`
         * Returns a builder. The builder type is hidden in the private module `app::detail`.
     * `pub fn load() -> Result<Self, Error>`
@@ -64,6 +70,43 @@
         * Variant used for Postgres backend.
 * Added `type ConnMan = ConnectionManager<AnyConn>`
     * A type alias used to shorten the name of the connection manager type, and doubles as a pun.
+
+##### `pub mod euclidon::asset`
+* Created module.
+* Added `struct Asset`
+    * Simple wrapper over unformatted data.
+    * Cannot be manually constructed.
+* Added `struct Assets`
+    * Manages assets and related functionalities.
+    * `pub fn new(config: &Config) -> Self`
+        * Constructs an instance and loads the path for the default namespace `Ns::EUCLIDON` from `config.assets_dir`.
+    * `pub async fn load(&self, loc: Loc) -> Result<Asset, AssetError>`
+        * Asynchronously loads an asset from the server hard disk.
+        * Currently, the main way of creating assets is through this function.
+    * `pub fn path_of(&self, loc: &Loc) -> Result<PathBuf, AssetError>`
+        * Takes in a `loc` and provides the associated path.
+        * Failure results if `loc.namespace` is not valid, and the function returns `AssetError::Ns(loc.namespace)` in that case.
+* Added `enum AssetError`
+    * Defined in `mod euclidon::asset::error`.
+    * Error type returned for issues with assets.
+    * Derives implementations for `trait Debug` and `trait thiserror::Error`.
+    * Wraps over various error types returned for assets as well.
+    * `Self::Ns(namespace: Ns)`
+        * Returned when `namespace` is not recognized.
+* Added `struct Loc`
+    * Defined in `mod euclidon::asset::loc`.
+    * Represents the location of an asset.
+    * `pub namespace: Ns`
+        * The namespace of the asset.
+    * `pub path: String`
+        * The path of the asset, relative to its namespace.
+    * `pub fn new(namespace: Ns, path: String) -> Self`
+        * Constructs a new instance with the given namespace and path.
+* Added `struct Ns`
+    * Defined in `mod euclidon::asset::loc`
+    * Represents a namespace for assets.
+    * `pub const EUCLIDON: Ns`
+        * The default namespace. Currently, the only namespace supported, but other ways of creating namespaces should be added in the future.
 
 ##### `pub mod euclidon::render`
 * Created module.
