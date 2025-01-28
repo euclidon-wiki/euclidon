@@ -81,3 +81,4 @@
     * [`chrono`](https://docs.rs/chrono/0.4.39) v0.4.39 with features: `std`, `clock`, `serde`
     * [`diesel`](https://docs.rs/diesel/2.2.6) v2.2.6 with features: `with-deprecated`, `chrono`, `postgres`, `r2d2`
     * [`serde`](https://docs.rs/serde/1.0.217) v1.0.217 with features: `std` (default), `derive`
+    * [`tera`](https://docs.rs/tera/1.20.0) v1.20.0 with features: `chrono`, `urlencode`
