@@ -46,6 +46,10 @@
         * The URL of the server.
         * Default value is loaded from environmental variable `SERVER_URL` provided through the .env file.
         * Alternatively, set using `.server_url(server_url: String)` function from the builder.
+    * Added member `database_url: String`.
+        * The URL of the database.
+        * Default value is loaded from environmental variable `DATABASE_URL` provided through the .env file.
+        * Alternatively, set using `.database_url(database_url: String)` function from the builder.
     * Added member `assets_dir: PathBuf`.
         * Path of the main assets directory.
         * Default value is `assets/euclidon`.
