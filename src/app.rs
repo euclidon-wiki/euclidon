@@ -91,6 +91,11 @@ mod detail {
             self
         }
 
+        pub fn database_url(mut self, database_url: String) -> Self {
+            self.database_url = Some(database_url);
+            self
+        }
+
         pub fn assets_dir(mut self, assets_dir: PathBuf) -> Self {
             self.assets_dir = Some(assets_dir);
             self
