@@ -10,6 +10,6 @@ use crate::{
 pub fn build_router(app: Arc<App>) -> Router {
     Router::new()
         .route("/", get(root::get))
-        .route("/assets/{path}", get(assets::get))
+        .route("/assets/{*path}", get(assets::get))
         .with_state(AppState(app))
 }
