@@ -1,7 +1,7 @@
 use tera::{Context, Tera};
 
 use crate::{
-    asset::{Assets, Loc, Ns},
+    asset::{Assets, Loc},
     Error,
 };
 
@@ -24,10 +24,7 @@ impl Renderer {
 impl Renderer {
     fn new_tera(assets: &Assets) -> Result<Tera, Error> {
         let mut tera = Tera::default();
-        let asset = assets.load(Loc::new(
-            Ns::EUCLIDON,
-            "templates/index.html.tera".to_string(),
-        ))?;
+        let asset = assets.load_transient(&Loc::new("templates/index.html.tera".to_string()))?;
 
         tera.add_raw_templates(vec![(
             "index",
