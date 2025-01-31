@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
 
     <title>Test title</title>
+
+    <link rel="stylesheet" href="/assets/styles/main.css">
   </head>
   <body>
     <p>Hello, world!</p>
