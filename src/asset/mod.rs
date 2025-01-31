@@ -30,14 +30,14 @@ pub enum AssetKind {
     Json,
 
     Css,
-    Javascript,
+    JavaScript,
 }
 
 impl AssetKind {
     pub fn from_extension(extension: Option<&str>) -> Self {
         match extension {
             Some("css") => Self::Css,
-            Some("js") => Self::Javascript,
+            Some("js") => Self::JavaScript,
             Some("json") => Self::Json,
 
             _ => Self::None,
@@ -50,7 +50,7 @@ impl AssetKind {
             Self::Json => "application/json",
 
             Self::Css => "text/css",
-            Self::Javascript => "text/javascript",
+            Self::JavaScript => "text/javascript",
         }
     }
 }
