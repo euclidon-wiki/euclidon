@@ -1,20 +1,27 @@
-use std::{ops::Deref, sync::Arc};
+use std::{ops::Deref, path::PathBuf, sync::Arc};
 
 use axum::extract::{FromRequestParts, State};
 
-use crate::{db::Db, Error};
+use crate::{asset::Assets, db::Db, render::Renderer, Error};
 
 use self::detail::ConfigBuilder;
 
 pub struct App {
-    pub db: Db,
     pub config: Config,
+
+    pub assets: Assets,
+    pub renderer: Renderer,
+    pub db: Db,
 }
 
 impl App {
     pub fn new(config: Config) -> Result<Self, Error> {
+        let assets = Assets::new(&config);
         Ok(Self {
             db: Db::new(&config)?,
+            renderer: Renderer::new(&assets)?,
+            assets,
+
             config,
         })
     }
@@ -35,6 +42,8 @@ impl Deref for AppState {
 pub struct Config {
     pub server_url: String,
     pub database_url: String,
+
+    pub assets_dir: PathBuf,
 }
 
 impl Config {
@@ -49,12 +58,16 @@ impl Config {
 
 #[doc(hidden)]
 mod detail {
+    use std::path::PathBuf;
+
     use crate::{app::Config, Error};
 
     #[derive(Default)]
     pub struct ConfigBuilder {
         server_url: Option<String>,
         database_url: Option<String>,
+
+        assets_dir: Option<PathBuf>,
     }
 
     impl ConfigBuilder {
@@ -66,11 +79,20 @@ mod detail {
                 database_url: self
                     .database_url
                     .map_or_else(|| std::env::var("DATABASE_URL"), Ok)?,
+
+                assets_dir: self
+                    .assets_dir
+                    .unwrap_or_else(|| PathBuf::from("assets/euclidon/")),
             })
         }
 
         pub fn server_url(mut self, server_url: String) -> Self {
             self.server_url = Some(server_url);
+            self
+        }
+
+        pub fn assets_dir(mut self, assets_dir: PathBuf) -> Self {
+            self.assets_dir = Some(assets_dir);
             self
         }
     }

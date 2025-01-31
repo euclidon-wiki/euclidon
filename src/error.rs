@@ -11,6 +11,12 @@ pub enum Error {
     Dotenvy(#[from] dotenvy::Error),
 
     #[error(transparent)]
+    Http(#[from] axum::http::Error),
+
+    #[error(transparent)]
+    Tera(#[from] tera::Error),
+
+    #[error(transparent)]
     Pool(#[from] diesel::r2d2::PoolError),
 }
 
