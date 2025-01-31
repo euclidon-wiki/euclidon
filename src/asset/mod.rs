@@ -92,7 +92,7 @@ impl Assets {
     }
 }
 
-pub struct Cache {
+struct Cache {
     cache: RwLock<HashMap<Loc, Arc<Asset>>>,
 }
 
