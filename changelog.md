@@ -161,3 +161,4 @@
     * [`serde_json`](https://docs.rs/serde_json/1.0.137) v1.0.137 with features: `std` (default)
     * [`tera`](https://docs.rs/tera/1.20.0) v1.20.0 with features: `chrono`, `urlencode`
     * [`base64`](https://docs.rs/base64/0.22.1) v0.22.1
+    * [`sha3`](https://docs.rs/sha3/0.10.8) v0.10.8
