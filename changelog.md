@@ -164,4 +164,5 @@
     * [`sha3`](https://docs.rs/sha3/0.10.8) v0.10.8
     * [`hmac`](https://docs.rs/hmac/0.12.1) v0.12.1
     * [`pbkdf2`](https://docs.rs/pbkdf2/0.12.2) v0.12.2
+    * [`rand_core`](https://docs.rs/rand_core/0.9.0) v0.9.0 with features: default, `os_rng`
     * [`rand_chacha`](https://docs.rs/rand_chacha/0.9.0) v0.9.0 with default features

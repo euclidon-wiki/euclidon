@@ -395,6 +395,7 @@ dependencies = [
  "hmac",
  "pbkdf2",
  "rand_chacha",
+ "rand_core",
  "serde",
  "serde_json",
  "sha3",
