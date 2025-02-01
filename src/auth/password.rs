@@ -1,12 +1,23 @@
 use base64::{prelude::BASE64_URL_SAFE, Engine};
+use diesel::{
+    backend::Backend,
+    deserialize::{FromSql, FromSqlRow},
+    expression::AsExpression,
+    query_builder::bind_collector::RawBytesBindCollector,
+    serialize::ToSql,
+    sql_types::Binary,
+};
 use rand_chacha::ChaCha12Rng;
 use rand_core::{RngCore, SeedableRng};
 
 use super::hash::{Algorithm, HashError, Hasher};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, AsExpression, FromSqlRow)]
+#[diesel(sql_type = Binary)]
 pub enum Password {
     V1(PasswordV1),
+
+    Invalid,
 }
 
 impl Password {
@@ -42,8 +53,16 @@ impl Password {
     ) -> Result<Self, PasswordError> {
         Ok(match segments.next() {
             Some("1") => Self::V1(PasswordV1::parse(segments)?),
+            Some("invalid") => Self::Invalid,
+
             _ => return Err(PasswordError::Variant),
         })
+    }
+}
+
+impl From<String> for Password {
+    fn from(value: String) -> Self {
+        Self::from_encoded(&value).unwrap_or(Self::Invalid)
     }
 }
 
@@ -51,7 +70,32 @@ impl std::fmt::Display for Password {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::V1(password) => write!(f, ":1:{password}"),
+            Self::Invalid => write!(f, ":invalid"),
         }
+    }
+}
+
+impl<DB> FromSql<Binary, DB> for Password
+where
+    DB: Backend,
+    String: FromSql<Binary, DB>,
+{
+    fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
+        Ok(Self::from_encoded(&String::from_sql(bytes)?)?)
+    }
+}
+
+impl<DB> ToSql<Binary, DB> for Password
+where
+    DB: Backend,
+    String: ToSql<Binary, DB>,
+    for<'c> DB: Backend<BindCollector<'c> = RawBytesBindCollector<DB>>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, DB>,
+    ) -> diesel::serialize::Result {
+        format!("{self}").to_sql(&mut out.reborrow())
     }
 }
 
