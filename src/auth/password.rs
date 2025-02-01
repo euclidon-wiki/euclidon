@@ -1,4 +1,4 @@
-use base64::{prelude::BASE64_STANDARD_NO_PAD, Engine};
+use base64::{prelude::BASE64_URL_SAFE, Engine};
 use rand_chacha::ChaCha12Rng;
 use rand_core::{RngCore, SeedableRng};
 
@@ -80,11 +80,11 @@ impl PasswordV1 {
 
     fn parse<'a>(segments: &mut impl Iterator<Item = &'a str>) -> Result<Self, PasswordError> {
         let hasher = Hasher::parse(segments)?;
-        let salt = BASE64_STANDARD_NO_PAD
+        let salt = BASE64_URL_SAFE
             .decode(segments.next().ok_or(PasswordError::Salt)?)
             .map_err(|_| PasswordError::Salt)?
             .into_boxed_slice();
-        let hash = BASE64_STANDARD_NO_PAD
+        let hash = BASE64_URL_SAFE
             .decode(segments.next().ok_or(PasswordError::Hash)?)
             .map_err(|_| PasswordError::Salt)?
             .into_boxed_slice();
@@ -99,8 +99,8 @@ impl std::fmt::Display for PasswordV1 {
             f,
             "{}:{}:{}",
             self.hasher,
-            BASE64_STANDARD_NO_PAD.encode(&self.salt),
-            BASE64_STANDARD_NO_PAD.encode(&self.hash)
+            BASE64_URL_SAFE.encode(&self.salt),
+            BASE64_URL_SAFE.encode(&self.hash)
         )
     }
 }
@@ -111,10 +111,16 @@ fn generate_salt() -> Box<[u8]> {
     Box::new(salt)
 }
 
+#[derive(Debug, thiserror::Error)]
 pub enum PasswordError {
+    #[error("invalid password scheme")]
     Invalid,
+    #[error("invalid variant")]
     Variant,
+    #[error("invalid hashing algorithm")]
     Hasher,
+    #[error("invalid salt")]
     Salt,
+    #[error("invalid password hash")]
     Hash,
 }
