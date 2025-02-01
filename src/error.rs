@@ -18,6 +18,8 @@ pub enum Error {
 
     #[error(transparent)]
     Pool(#[from] diesel::r2d2::PoolError),
+    #[error(transparent)]
+    Query(#[from] diesel::result::Error),
 }
 
 impl IntoResponse for Error {
