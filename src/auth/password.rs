@@ -124,3 +124,14 @@ pub enum PasswordError {
     #[error("invalid password hash")]
     Hash,
 }
+
+#[test]
+fn password_test() {
+    let password = Password::generate_current("hello", None, None).unwrap();
+
+    let encoded = format!("{password}");
+    println!("{encoded}");
+
+    let decoded = Password::from_encoded(&encoded).unwrap();
+    println!("{decoded}");
+}
