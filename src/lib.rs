@@ -5,6 +5,7 @@ pub mod db;
 mod error;
 pub mod render;
 mod router;
+pub mod schema;
 mod tasks;
 
 pub use self::{
