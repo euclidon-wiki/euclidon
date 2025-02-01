@@ -20,6 +20,9 @@
     * Defined in `mod euclidon::router`.
     * Constructs an axum router with the provided `app` instance as its state.
     * State can be extracted via the custom `AppState` extractor.
+* Added function `fn spawn_tasks(app: Arc<App>) -> Vec<impl JoinHandle<()>>`.
+    * Defined in `mod euclidon::tasks`.
+    * Spawns the various background tasks required by Euclidon.
 
 ##### `mod euclidon::app`
 * Created module.
