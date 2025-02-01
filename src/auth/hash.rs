@@ -1,6 +1,9 @@
 use hmac::Hmac;
 use sha3::Sha3_512;
 
+use super::PasswordError;
+
+#[derive(Debug, Clone)]
 pub enum Hasher {
     Pbkdf2 {
         algorithm: Algorithm,
@@ -18,6 +21,15 @@ impl Hasher {
         }
     }
 
+    pub(super) fn parse<'a>(
+        segments: &mut impl Iterator<Item = &'a str>,
+    ) -> Result<Self, PasswordError> {
+        match segments.next() {
+            Some("pbkdf2") => Self::parse_pbkdf2(segments),
+            _ => Err(PasswordError::Hasher),
+        }
+    }
+
     pub fn hash(&self, password: &[u8], salt: &[u8]) -> Result<Box<[u8]>, HashError> {
         match self {
             Self::Pbkdf2 {
@@ -26,6 +38,29 @@ impl Hasher {
                 len,
             } => Self::hash_pbkdf2(password, salt, *algorithm, *rounds, *len),
         }
+    }
+
+    fn parse_pbkdf2<'a>(
+        segments: &mut impl Iterator<Item = &'a str>,
+    ) -> Result<Self, PasswordError> {
+        let algorithm = Algorithm::from_name(segments.next().ok_or(PasswordError::Hasher)?)
+            .ok_or(PasswordError::Hasher)?;
+        let rounds = segments
+            .next()
+            .ok_or(PasswordError::Hasher)?
+            .parse()
+            .map_err(|_| PasswordError::Hasher)?;
+        let len = segments
+            .next()
+            .ok_or(PasswordError::Hasher)?
+            .parse()
+            .map_err(|_| PasswordError::Hasher)?;
+
+        Ok(Self::Pbkdf2 {
+            algorithm,
+            rounds,
+            len,
+        })
     }
 
     fn hash_pbkdf2(
@@ -49,9 +84,36 @@ impl Hasher {
     }
 }
 
+impl std::fmt::Display for Hasher {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Hasher::Pbkdf2 {
+                algorithm,
+                rounds,
+                len,
+            } => write!(f, "pbkdf2:{}:{rounds}:{len}", algorithm.name()),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Algorithm {
     HmacSha3_512,
+}
+
+impl Algorithm {
+    pub fn from_name(name: &str) -> Option<Self> {
+        Some(match name {
+            "hmac-sha3-512" => Self::HmacSha3_512,
+            _ => return None,
+        })
+    }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Algorithm::HmacSha3_512 => "hmac-sha3-512",
+        }
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
