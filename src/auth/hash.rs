@@ -26,7 +26,7 @@ impl Hasher {
     ) -> Result<Self, PasswordError> {
         match segments.next() {
             Some("pbkdf2") => Self::parse_pbkdf2(segments),
-            _ => Err(PasswordError::Hasher),
+            _ => Err(PasswordError::HasherComp),
         }
     }
 
@@ -43,18 +43,18 @@ impl Hasher {
     fn parse_pbkdf2<'a>(
         segments: &mut impl Iterator<Item = &'a str>,
     ) -> Result<Self, PasswordError> {
-        let algorithm = Algorithm::from_name(segments.next().ok_or(PasswordError::Hasher)?)
-            .ok_or(PasswordError::Hasher)?;
+        let algorithm = Algorithm::from_name(segments.next().ok_or(PasswordError::HasherComp)?)
+            .ok_or(PasswordError::HasherComp)?;
         let rounds = segments
             .next()
-            .ok_or(PasswordError::Hasher)?
+            .ok_or(PasswordError::HasherComp)?
             .parse()
-            .map_err(|_| PasswordError::Hasher)?;
+            .map_err(|_| PasswordError::HasherComp)?;
         let len = segments
             .next()
-            .ok_or(PasswordError::Hasher)?
+            .ok_or(PasswordError::HasherComp)?
             .parse()
-            .map_err(|_| PasswordError::Hasher)?;
+            .map_err(|_| PasswordError::HasherComp)?;
 
         Ok(Self::Pbkdf2 {
             algorithm,

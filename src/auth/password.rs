@@ -12,11 +12,12 @@ use rand_core::{RngCore, SeedableRng};
 
 use super::hash::{Algorithm, HashError, Hasher};
 
-#[derive(Debug, Clone, AsExpression, FromSqlRow)]
+#[derive(Debug, Clone, AsExpression, FromSqlRow, Default)]
 #[diesel(sql_type = Binary)]
 pub enum Password {
     V1(PasswordV1),
 
+    #[default]
     Invalid,
 }
 
@@ -48,6 +49,13 @@ impl Password {
         }
     }
 
+    pub fn compare(&self, other: &str) -> Result<bool, PasswordError> {
+        match self {
+            Self::V1(password) => password.compare(other),
+            Self::Invalid => Ok(false),
+        }
+    }
+
     fn parse_variant<'a>(
         segments: &mut impl Iterator<Item = &'a str>,
     ) -> Result<Self, PasswordError> {
@@ -55,8 +63,12 @@ impl Password {
             Some("1") => Self::V1(PasswordV1::parse(segments)?),
             Some("invalid") => Self::Invalid,
 
-            _ => return Err(PasswordError::Variant),
+            _ => return Err(PasswordError::VariantComp),
         })
+    }
+
+    pub fn is_valid(&self) -> bool {
+        !matches!(self, Self::Invalid)
     }
 }
 
@@ -99,6 +111,12 @@ where
     }
 }
 
+fn generate_salt() -> Box<[u8]> {
+    let mut salt = [0; 16];
+    ChaCha12Rng::from_os_rng().fill_bytes(&mut salt);
+    Box::new(salt)
+}
+
 #[derive(Debug, Clone)]
 pub struct PasswordV1 {
     pub hasher: Hasher,
@@ -125,15 +143,19 @@ impl PasswordV1 {
     fn parse<'a>(segments: &mut impl Iterator<Item = &'a str>) -> Result<Self, PasswordError> {
         let hasher = Hasher::parse(segments)?;
         let salt = BASE64_URL_SAFE
-            .decode(segments.next().ok_or(PasswordError::Salt)?)
-            .map_err(|_| PasswordError::Salt)?
+            .decode(segments.next().ok_or(PasswordError::SaltComp)?)
+            .map_err(|_| PasswordError::SaltComp)?
             .into_boxed_slice();
         let hash = BASE64_URL_SAFE
-            .decode(segments.next().ok_or(PasswordError::Hash)?)
-            .map_err(|_| PasswordError::Salt)?
+            .decode(segments.next().ok_or(PasswordError::HashComp)?)
+            .map_err(|_| PasswordError::SaltComp)?
             .into_boxed_slice();
 
         Ok(Self { hasher, salt, hash })
+    }
+
+    fn compare(&self, other: &str) -> Result<bool, PasswordError> {
+        Ok(self.hash == self.hasher.hash(other.as_bytes(), &self.salt)?)
     }
 }
 
@@ -149,24 +171,21 @@ impl std::fmt::Display for PasswordV1 {
     }
 }
 
-fn generate_salt() -> Box<[u8]> {
-    let mut salt = [0; 16];
-    ChaCha12Rng::from_os_rng().fill_bytes(&mut salt);
-    Box::new(salt)
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum PasswordError {
     #[error("invalid password scheme")]
     Invalid,
     #[error("invalid variant")]
-    Variant,
+    VariantComp,
     #[error("invalid hashing algorithm")]
-    Hasher,
+    HasherComp,
     #[error("invalid salt")]
-    Salt,
+    SaltComp,
     #[error("invalid password hash")]
-    Hash,
+    HashComp,
+
+    #[error(transparent)]
+    Hash(#[from] HashError),
 }
 
 #[test]
