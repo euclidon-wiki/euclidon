@@ -20,6 +20,9 @@
     * Defined in `mod euclidon::router`.
     * Constructs an axum router with the provided `app` instance as its state.
     * State can be extracted via the custom `AppState` extractor.
+* Added function `fn spawn_tasks(app: Arc<App>) -> Vec<impl JoinHandle<()>>`.
+    * Defined in `mod euclidon::tasks`.
+    * Spawns the various background tasks required by Euclidon.
 
 ##### `mod euclidon::app`
 * Created module.
@@ -148,7 +151,7 @@
 #### Internal changes
 * Set Rust compilation version at v1.84.0 and edition to 2021.
 * Added the following crates as dependencies:
-    * [`tokio`](https://docs.rs/tokio/1.43.0) v1.43.0 with features: `rt-multi-thread`, `macros`, `net`, `fs`
+    * [`tokio`](https://docs.rs/tokio/1.43.0) v1.43.0 with features: `rt-multi-thread`, `macros`, `time`, `net`, `fs`
     * [`axum`](https://docs.rs/axum/0.8.1) v0.8.1 with features: `macros`, `tokio`, `http1`, `http2`, `multipart`, `query`, `form`
     * [`dotenvy`](https://docs.rs/dotenvy/0.15.7) v0.15.7
     * [`thiserror`](https://docs.rs/thiserror/2.0.11) v2.0.11
