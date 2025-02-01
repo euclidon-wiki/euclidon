@@ -9,5 +9,6 @@ diesel::table! {
         email -> Varchar,
         password -> Bytea,
         created_on -> Timestamptz,
+        updated_on -> Timestamptz,
     }
 }
