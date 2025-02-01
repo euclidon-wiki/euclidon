@@ -62,4 +62,5 @@ hmac = "0.12.1"
 pbkdf2 = { version = "0.12.2", default-features = false }
 
 # randomization
+rand_core = "0.9.0"
 rand_chacha = "0.9.0"
