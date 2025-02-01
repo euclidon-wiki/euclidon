@@ -162,3 +162,4 @@
     * [`tera`](https://docs.rs/tera/1.20.0) v1.20.0 with features: `chrono`, `urlencode`
     * [`base64`](https://docs.rs/base64/0.22.1) v0.22.1
     * [`sha3`](https://docs.rs/sha3/0.10.8) v0.10.8
+    * [`hmac`](https://docs.rs/hmac/0.12.1) v0.12.1

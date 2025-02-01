@@ -58,3 +58,4 @@ diesel = { version = "2.2.6", default-features = false, features = [
 # hashing & crypto
 base64 = "0.22.1"
 sha3 = "0.10.8"
+hmac = "0.12.1"
