@@ -15,7 +15,5 @@ async fn main() -> Result<(), Error> {
     let listener = TcpListener::bind(server_url).await?;
 
     println!("> server listening on: {server_url}");
-    axum::serve(listener, router).await?;
-
-    Ok(())
+    Ok(axum::serve(listener, router).await?)
 }
