@@ -54,3 +54,6 @@ diesel = { version = "2.2.6", default-features = false, features = [
     "postgres",
     "r2d2",
 ] }
+
+# hashing & crypto
+base64 = "0.22.1"
