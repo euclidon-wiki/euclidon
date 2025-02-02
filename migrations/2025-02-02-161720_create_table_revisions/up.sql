@@ -7,7 +7,6 @@ create table revisions (
         references contents (id)
             on delete restrict,
     
-    page_id     bigint not null,
     user_id     bigint not null
         references users (id)
             on delete set default,
