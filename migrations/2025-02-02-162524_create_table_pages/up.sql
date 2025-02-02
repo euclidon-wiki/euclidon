@@ -4,6 +4,9 @@ create table pages (
     rev_id      bigint not null
         references revisions (id)
             on delete restrict,
+    root_id     bigint not null
+        references revisions (id)
+            on delete restrict,
 
     created_on timestamptz not null
 );

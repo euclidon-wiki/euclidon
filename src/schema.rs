@@ -13,6 +13,7 @@ diesel::table! {
         #[max_length = 255]
         title -> Varchar,
         rev_id -> Int8,
+        root_id -> Int8,
         created_on -> Timestamptz,
     }
 }
@@ -49,7 +50,6 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(pages -> revisions (rev_id));
 diesel::joinable!(revisions -> contents (content_id));
 diesel::joinable!(revisions -> users (user_id));
 diesel::joinable!(user_sessions -> users (user_id));
