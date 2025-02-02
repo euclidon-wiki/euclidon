@@ -67,7 +67,6 @@ impl<'a> Signup<'a> {
 }
 
 #[derive(Selectable, Queryable)]
-#[diesel(table_name = users)]
 pub struct User {
     pub id: i64,
     pub name: String,
