@@ -8,7 +8,7 @@ pub mod model;
 pub mod render;
 mod router;
 pub mod schema;
-pub mod tasks;
+mod tasks;
 
 pub use self::{
     app::{App, AppState},
