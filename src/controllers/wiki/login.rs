@@ -3,6 +3,7 @@ use axum::{
     Form,
 };
 use axum_extra::extract::{cookie::Cookie, CookieJar};
+use chrono::Utc;
 use diesel::{connection::LoadConnection, pg::Pg, Connection};
 use serde::Deserialize;
 use serde_json::json;
@@ -36,13 +37,15 @@ pub async fn post(
                     if res {
                         let session = Session::generate(login.id, None, conn)?;
                         jar = jar.add(Cookie::new("euc-user-token", session.token.clone()));
+
                         _ = session.insert(conn)?;
+                        _ = login.mark_updated(Utc::now(), conn)?;
                     }
 
                     res.into()
                 }
                 Err(_) => {
-                    login.mark_invalid(conn)?;
+                    login.set_invalid(conn)?;
                     LoginStatus::Failure
                 }
             }

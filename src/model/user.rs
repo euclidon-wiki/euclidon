@@ -98,15 +98,25 @@ impl User {
             .optional()?)
     }
 
-    pub fn mark_invalid<C>(self, conn: &mut C) -> Result<bool, Error>
+    pub fn mark_updated<C>(&self, updated_on: DateTime<Utc>, conn: &mut C) -> Result<bool, Error>
     where
         C: Connection<Backend = Pg>,
     {
         Ok(
             0 != diesel::update(users::table.filter(users::id.eq(self.id)))
-                .set(users::password.eq(Password::Invalid))
+                .set(users::updated_on.eq(updated_on))
                 .execute(conn)?,
         )
+    }
+
+    pub fn set_invalid<C>(self, conn: &mut C) -> Result<bool, Error>
+    where
+        C: Connection<Backend = Pg>,
+    {
+        Ok(self.mark_updated(Utc::now(), conn)?
+            && 0 != diesel::update(users::table.filter(users::id.eq(self.id)))
+                .set(users::password.eq(Password::Invalid))
+                .execute(conn)?)
     }
 }
 
