@@ -38,11 +38,13 @@ impl Password {
         Ok(Self::V1(PasswordV1::generate(password, salt, hasher)?))
     }
 
-    pub fn from_encoded(encoded: &str) -> Result<Self, PasswordError> {
-        if !encoded.starts_with(':') {
+    pub fn from_encoded(encoded: &[u8]) -> Result<Self, PasswordError> {
+        if !encoded.starts_with(b":") {
             Err(PasswordError::Invalid)
         } else {
-            let mut segments = encoded.split(':');
+            let mut segments = std::str::from_utf8(encoded)
+                .map_err(|_| PasswordError::Invalid)?
+                .split(':');
             _ = segments.next();
 
             Self::parse_variant(&mut segments)
@@ -72,9 +74,12 @@ impl Password {
     }
 }
 
-impl From<String> for Password {
-    fn from(value: String) -> Self {
-        Self::from_encoded(&value).unwrap_or(Self::Invalid)
+impl<S> From<S> for Password
+where
+    S: AsRef<str>,
+{
+    fn from(value: S) -> Self {
+        Self::generate_current(value.as_ref(), None, None).unwrap_or(Self::Invalid)
     }
 }
 
@@ -90,24 +95,24 @@ impl std::fmt::Display for Password {
 impl<DB> FromSql<Binary, DB> for Password
 where
     DB: Backend,
-    String: FromSql<Binary, DB>,
+    Vec<u8>: FromSql<Binary, DB>,
 {
     fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
-        Ok(Self::from_encoded(&String::from_sql(bytes)?)?)
+        Ok(Self::from_encoded(Vec::from_sql(bytes)?.as_slice())?)
     }
 }
 
 impl<DB> ToSql<Binary, DB> for Password
 where
     DB: Backend,
-    String: ToSql<Binary, DB>,
+    [u8]: ToSql<Binary, DB>,
     for<'c> DB: Backend<BindCollector<'c> = RawBytesBindCollector<DB>>,
 {
     fn to_sql<'b>(
         &'b self,
         out: &mut diesel::serialize::Output<'b, '_, DB>,
     ) -> diesel::serialize::Result {
-        format!("{self}").to_sql(&mut out.reborrow())
+        format!("{self}").as_bytes().to_sql(&mut out.reborrow())
     }
 }
 
@@ -195,6 +200,6 @@ fn password_test() {
     let encoded = format!("{password}");
     println!("{encoded}");
 
-    let decoded = Password::from_encoded(&encoded).unwrap();
+    let decoded = Password::from_encoded(encoded.as_bytes()).unwrap();
     println!("{decoded}");
 }
