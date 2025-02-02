@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+
+    <title>Login</title>
+
+    <link rel="stylesheet" href="/assets/styles/main.css">
+  </head>
+  <body>
+    <form id="login-form" method="post">
+      <div id="login-id">
+        <label id="login-id-label" for="id">Insert username or e-mail</label>
+        <input id="login-id-input" type="text" name="id" placeholder="Username or e-mail...">
+      </div>
+
+      <div id="login-password">
+        <label id="login-password-label" for="password">Insert password</label>
+        <input id="login-password-input" type="text" name="password" placeholder="Password...">
+      </div>
+
+      <div id="login-buttons">
+        <input id="login-submit" type="submit" value="Log in">
+      </div>
+    </form>
+  </body>
+</html>

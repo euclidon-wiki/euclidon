@@ -24,14 +24,32 @@ impl Renderer {
 impl Renderer {
     fn new_tera(assets: &Assets) -> Result<Tera, Error> {
         let mut tera = Tera::default();
-        let asset = assets.load_transient(&Loc::new("templates/index.html.tera".to_string()))?;
-
-        tera.add_raw_templates(vec![(
-            "index",
-            std::str::from_utf8(&asset.data)
-                .unwrap_or_else(|e| panic!("template not valid utf-8: {e}")),
-        )])?;
+        tera.add_raw_templates(vec![
+            Self::load_template(
+                assets,
+                "index".to_string(),
+                "templates/index.html.tera".to_string(),
+            )?,
+            Self::load_template(
+                assets,
+                "login".to_string(),
+                "templates/login.html.tera".to_string(),
+            )?,
+        ])?;
 
         Ok(tera)
+    }
+
+    fn load_template(
+        assets: &Assets,
+        name: String,
+        path: String,
+    ) -> Result<(String, String), Error> {
+        Ok((
+            name,
+            std::str::from_utf8(&assets.load_transient(&Loc::new(path))?.data)
+                .unwrap_or_else(|e| panic!("template not valid utf-8: {e}"))
+                .to_string(),
+        ))
     }
 }

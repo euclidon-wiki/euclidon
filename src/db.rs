@@ -1,6 +1,6 @@
 use diesel::{
-    r2d2::{ConnectionManager, Pool, PooledConnection},
-    Connection, MultiConnection, PgConnection, QueryResult,
+    r2d2::{ConnectionManager, Pool},
+    MultiConnection, PgConnection, QueryResult,
 };
 
 use crate::{app::Config, Error};
@@ -10,10 +10,10 @@ pub enum AnyConn {
     Pg(PgConnection),
 }
 
-pub type ConnMan = ConnectionManager<AnyConn>;
+pub type ConnMan = ConnectionManager<PgConnection>;
 
 pub struct Db {
-    pool: Pool<ConnMan>,
+    pub pool: Pool<ConnMan>,
 }
 
 impl Db {
@@ -25,9 +25,5 @@ impl Db {
         println!("> database connection established to: {database_url}");
         println!("> active connections: {}", pool.state().connections);
         Ok(Self { pool })
-    }
-
-    pub fn conn(&self) -> Result<PooledConnection<ConnMan>, Error> {
-        Ok(self.pool.get()?)
     }
 }
