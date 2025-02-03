@@ -35,9 +35,17 @@ pub async fn get(
         .map(str::trim)
         .collect::<String>();
     let query_title = display_title.replace(char::is_whitespace, "_");
-    let response = view_page(&app, &mut jar, display_title, query_title, uri, action)?;
+    if path != query_title {
+        Ok((
+            jar,
+            Redirect::permanent(&format!("/w/page/{query_title}{}", action.into_query()))
+                .into_response(),
+        ))
+    } else {
+        let response = view_page(&app, &mut jar, display_title, query_title, uri, action)?;
 
-    Ok((jar, response))
+        Ok((jar, response))
+    }
 }
 
 #[debug_handler(state = AppState)]
@@ -66,7 +74,7 @@ pub async fn post(
             Redirect::to(&format!(
                 "/w/login?redirect_after={}&action={}",
                 uri.path(),
-                action.kind,
+                action.into_query(),
             ))
             .into_response(),
         ));
@@ -96,7 +104,16 @@ pub async fn post(
 #[derive(Debug, Deserialize)]
 pub struct Action {
     #[serde(default, rename = "action")]
-    pub kind: ActionKind,
+    pub kind: Option<ActionKind>,
+}
+
+impl Action {
+    pub fn into_query(self) -> String {
+        match self.kind {
+            Some(action) => format!("?action={action}"),
+            None => String::default(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize)]
@@ -140,7 +157,7 @@ fn view_page(
     let conn = &mut app.db.pool.get()?;
     let content = get_page_content(&query_title, conn)?.map(Body::into_text);
 
-    if action.kind == ActionKind::Edit {
+    if let Some(ActionKind::Edit) = action.kind {
         view_page_editor(app, jar, display_title, query_title, uri, content)
     } else {
         match content {
@@ -177,7 +194,7 @@ fn view_page_display(
 ) -> Result<Response, Error> {
     render_page(
         &app,
-        "page/edit",
+        "page/view",
         json!({
             "title": {
                 "display": display_title,
