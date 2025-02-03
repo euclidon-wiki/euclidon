@@ -74,8 +74,8 @@ impl LoginData {
         C: Connection<Backend = Pg> + LoadConnection,
     {
         match self.kind() {
-            LoginKind::Username => User::from_name(&self.id, conn),
-            LoginKind::Email => User::from_email(&self.id, conn),
+            LoginKind::Username => User::by_name(&self.id, conn),
+            LoginKind::Email => User::by_email(&self.id, conn),
         }
     }
 
