@@ -1,4 +1,5 @@
 use axum::{
+    debug_handler,
     response::{Html, IntoResponse, Redirect, Response},
     Form,
 };
@@ -14,6 +15,7 @@ use crate::{
     AppState, Error,
 };
 
+#[debug_handler(state = AppState)]
 pub async fn get(AppState(app): AppState) -> Result<Response, Error> {
     Ok(Html::from(
         Response::builder().body(
@@ -24,6 +26,7 @@ pub async fn get(AppState(app): AppState) -> Result<Response, Error> {
     .into_response())
 }
 
+#[debug_handler(state = AppState)]
 pub async fn post(
     AppState(app): AppState,
     mut jar: CookieJar,
