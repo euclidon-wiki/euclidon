@@ -274,3 +274,5 @@
     * [`rand_core`](https://docs.rs/rand_core/0.9.0) v0.9.0 with features: default, `os_rng`
     * [`rand_chacha`](https://docs.rs/rand_chacha/0.9.0) v0.9.0 with default features
     * [`axum-extra`](https://docs.rs/axum-extra/0.10.0) v0.10.0 with features: `cookie`
+
+TODO: add changes from PR #9.
