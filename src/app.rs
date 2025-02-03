@@ -82,7 +82,7 @@ mod detail {
 
                 assets_dir: self
                     .assets_dir
-                    .unwrap_or_else(|| PathBuf::from("assets/euclidon/")),
+                    .unwrap_or_else(|| PathBuf::from("assets/")),
             })
         }
 

@@ -1,5 +1,7 @@
 {% extends "page/base" %}
 
 {% block page_main -%}
-Page name: '{{ page.title }}'
+<p>Page name: '{{ page.title }}'</p>
+
+<p>{{ page.content }}</p>
 {%- endblock page_main %}
