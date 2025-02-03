@@ -33,6 +33,18 @@ impl Page {
             .get_result(conn)
             .optional()?)
     }
+
+    pub fn set_revision<C>(&mut self, revision: &Revision, conn: &mut C) -> Result<bool, Error>
+    where
+        C: Connection<Backend = Pg>,
+    {
+        self.rev_id = revision.id;
+        Ok(
+            0 != diesel::update(pages::table.filter(pages::id.eq(self.id)))
+                .set(pages::rev_id.eq(revision.id))
+                .execute(conn)?,
+        )
+    }
 }
 
 #[derive(Insertable)]
@@ -41,14 +53,18 @@ pub struct NewPage<'a> {
     pub title: &'a str,
     pub rev_id: i64,
     pub root_id: i64,
+
+    pub created_on: DateTime<Utc>,
 }
 
 impl<'a> NewPage<'a> {
-    pub fn new(title: &'a str, rev_id: i64) -> Self {
+    pub fn new(title: &'a str, rev_id: i64, created_on: Option<DateTime<Utc>>) -> Self {
         Self {
             title,
             rev_id,
             root_id: rev_id,
+
+            created_on: created_on.unwrap_or_else(|| Utc::now()),
         }
     }
 
@@ -163,6 +179,10 @@ pub struct NewContent {
 }
 
 impl NewContent {
+    pub fn new(body: Body) -> Self {
+        Self { body }
+    }
+
     pub fn insert<C>(self, conn: &mut C) -> Result<Content, Error>
     where
         C: Connection<Backend = Pg> + LoadConnection,

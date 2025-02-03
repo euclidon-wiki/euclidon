@@ -18,7 +18,7 @@
     <div id="page-editor-utils">
     </div>
     <div id="page-editor-main">
-      <textarea id="page-edit-textarea">{{ page.content }}</textarea>
+      <textarea id="page-edit-textarea" name="content">{{ page.content }}</textarea>
     </div>
   </div>
 

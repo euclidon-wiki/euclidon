@@ -2,6 +2,7 @@ use axum::{
     debug_handler,
     extract::{OriginalUri, Path, Query},
     response::{Html, IntoResponse, Redirect, Response},
+    Form,
 };
 use axum_extra::extract::CookieJar;
 use chrono::Utc;
@@ -12,7 +13,7 @@ use tera::Context;
 
 use crate::{
     model::{
-        page::{Content, Page, Revision},
+        page::{Content, NewContent, NewPage, NewRevision, Page, Revision},
         user::Session,
     },
     output::Body,
@@ -27,26 +28,69 @@ pub async fn get(
     Path(path): Path<String>,
     Query(action): Query<Action>,
 ) -> Result<(CookieJar, Response), Error> {
-    let title = path.trim().split('/').map(str::trim).collect::<String>();
-    let response = view_page(&app, &mut jar, title, uri, action)?;
+    let display_title = path
+        .replace('_', " ")
+        .trim()
+        .split('/')
+        .map(str::trim)
+        .collect::<String>();
+    let query_title = display_title.replace(char::is_whitespace, "_");
+    let response = view_page(&app, &mut jar, display_title, query_title, uri, action)?;
 
     Ok((jar, response))
 }
 
 #[debug_handler(state = AppState)]
 pub async fn post(
-    AppState(_app): AppState,
+    AppState(app): AppState,
+    uri: OriginalUri,
+    mut jar: CookieJar,
     Path(path): Path<String>,
     Query(action): Query<Action>,
-) -> Result<Response, Error> {
-    let path = path.trim().replace(char::is_whitespace, "_");
+    Form(edit): Form<EditPage>,
+) -> Result<(CookieJar, Response), Error> {
+    let display_title = path
+        .replace('_', " ")
+        .trim()
+        .split('/')
+        .map(str::trim)
+        .collect::<String>();
+    let query_title = display_title.replace(char::is_whitespace, "_");
 
-    let query = match action.kind {
-        ActionKind::View | ActionKind::Submit => "",
-        ActionKind::Edit => "&action=edit",
+    let conn = &mut app.db.pool.get()?;
+    let Some(session) = validate_login(&mut jar, conn)? else {
+        // TODO: redirecting to login like this will cause the form submission to be dropped,
+        // and so user contribution will probably be lost. Find some way to get around this.
+        return Ok((
+            jar,
+            Redirect::to(&format!(
+                "/w/login?redirect_after={}&action={}",
+                uri.path(),
+                action.kind,
+            ))
+            .into_response(),
+        ));
     };
 
-    Ok(Redirect::to(&format!("w/page/{path}{query}")).into_response())
+    let content = NewContent::new(Body::Text(edit.content)).insert(conn)?;
+    if let Some(mut page) = Page::by_title(&query_title, conn)? {
+        let revision =
+            NewRevision::new(Some(page.rev_id), content.id, session.user_id, None).insert(conn)?;
+        page.set_revision(&revision, conn)?;
+    } else {
+        let revision = NewRevision::new(None, content.id, session.user_id, None).insert(conn)?;
+        NewPage::new(&query_title, revision.id, Some(revision.created_on)).insert(conn)?;
+    };
+
+    Ok((
+        jar,
+        Redirect::to(
+            &uri.path_and_query()
+                .map(|p| p.as_str().to_string())
+                .unwrap_or_else(|| format!("/w/page/{query_title}")),
+        )
+        .into_response(),
+    ))
 }
 
 #[derive(Debug, Deserialize)]
@@ -64,23 +108,43 @@ pub enum ActionKind {
     Submit,
 }
 
+impl ActionKind {
+    pub fn as_text(&self) -> &'static str {
+        match self {
+            Self::View => "view",
+            Self::Submit => "submit",
+            Self::Edit => "edit",
+        }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct EditPage {
+    pub content: String,
+}
+
+impl std::fmt::Display for ActionKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_text())
+    }
+}
+
 fn view_page(
     app: &App,
     jar: &mut CookieJar,
-    title: String,
+    display_title: String,
+    query_title: String,
     uri: OriginalUri,
     action: Action,
 ) -> Result<Response, Error> {
     let conn = &mut app.db.pool.get()?;
+    let content = get_page_content(&query_title, conn)?.map(Body::into_text);
 
-    let content = get_page_content(&title, conn)?.map(Body::into_text);
-
-    let display_title = title.replace('_', " ");
     if action.kind == ActionKind::Edit {
-        view_page_editor(app, jar, display_title, uri, content)
+        view_page_editor(app, jar, display_title, query_title, uri, content)
     } else {
         match content {
-            Some(content) => view_page_display(app, display_title, content),
+            Some(content) => view_page_display(app, display_title, query_title, content),
             None => page_not_found(app, display_title),
         }
     }
@@ -105,13 +169,19 @@ where
     })
 }
 
-fn view_page_display(app: &App, display_title: String, content: String) -> Result<Response, Error> {
+fn view_page_display(
+    app: &App,
+    display_title: String,
+    query_title: String,
+    content: String,
+) -> Result<Response, Error> {
     render_page(
         &app,
         "page/edit",
         json!({
             "title": {
-                "display": display_title
+                "display": display_title,
+                "query": query_title,
             },
             "content": content
         }),
@@ -134,6 +204,7 @@ fn view_page_editor(
     app: &App,
     jar: &mut CookieJar,
     display_title: String,
+    query_title: String,
     uri: OriginalUri,
     content: Option<String>,
 ) -> Result<Response, Error> {
@@ -150,7 +221,8 @@ fn view_page_editor(
             "page/edit",
             json!({
                 "title": {
-                    "display": display_title
+                    "display": display_title,
+                    "query": query_title,
                 },
                 "content": content.unwrap_or_default()
             }),
