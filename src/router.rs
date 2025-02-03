@@ -23,4 +23,5 @@ fn build_wiki_router() -> Router<AppState> {
     Router::new()
         .route("/", get(root::get))
         .route("/login", get(wiki::login::get).post(wiki::login::post))
+        .route("/page/{*path}", get(wiki::page::get).post(wiki::page::post))
 }

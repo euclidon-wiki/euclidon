@@ -1,0 +1,25 @@
+{% extends "index" %}
+
+{% block title -%} {{ page.title }} &ndash; {{ site.title }} {%- endblock title %}
+
+{% block body %}
+  <div id="page-container">
+    <div id="page-header-container">
+      <header id="page-header">
+        {% block page_header %}{%endblock page_header %}
+      </header>
+    </div>
+
+    <div id="page-main-container">
+      <main id="page-main">
+        {% block page_main %}{%endblock page_main %}
+      </main>
+    </div>
+
+    <div id="page-footer-container">
+      <footer id="page-footer">
+        {% block page_footer %}{%endblock page_footer %}
+      </footer>
+    </div>
+  </div>
+{% endblock body %}
