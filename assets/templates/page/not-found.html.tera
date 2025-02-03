@@ -1,0 +1,5 @@
+{% extends "page/view" %}
+
+{% block page_content -%}
+<p>Page <b>{{ page.title.display }}</b> not found. Would you like to <a href="?action=edit">create it</a>?</p>
+{%- endblock page_content %}

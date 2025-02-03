@@ -25,6 +25,12 @@ impl Body {
             Self::Text(String::from_utf8(body)?)
         })
     }
+
+    pub fn into_text(self) -> String {
+        match self {
+            Self::Text(text) => text,
+        }
+    }
 }
 
 impl std::fmt::Display for Body {

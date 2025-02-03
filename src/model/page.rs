@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use diesel::{
     connection::LoadConnection, pg::Pg, prelude::Insertable, Connection, ExpressionMethods,
-    QueryDsl, Queryable, RunQueryDsl, Selectable,
+    OptionalExtension, QueryDsl, Queryable, RunQueryDsl, Selectable,
 };
 
 use crate::{
@@ -20,6 +20,19 @@ pub struct Page {
     pub root_id: i64,
 
     pub created_on: DateTime<Utc>,
+}
+
+impl Page {
+    pub fn by_title<C>(title: &str, conn: &mut C) -> Result<Option<Self>, Error>
+    where
+        C: Connection<Backend = Pg> + LoadConnection,
+    {
+        Ok(pages::table
+            .filter(pages::title.eq(title))
+            .select(pages::all_columns)
+            .get_result(conn)
+            .optional()?)
+    }
 }
 
 #[derive(Insertable)]
@@ -72,6 +85,19 @@ pub struct Revision {
     pub created_on: DateTime<Utc>,
 }
 
+impl Revision {
+    pub fn by_id<C>(id: i64, conn: &mut C) -> Result<Option<Self>, Error>
+    where
+        C: Connection<Backend = Pg> + LoadConnection,
+    {
+        Ok(revisions::table
+            .filter(revisions::id.eq(id))
+            .select(revisions::all_columns)
+            .get_result(conn)
+            .optional()?)
+    }
+}
+
 #[derive(Insertable)]
 #[diesel(table_name = revisions, check_for_backend(Pg))]
 pub struct NewRevision {
@@ -115,6 +141,19 @@ impl NewRevision {
 pub struct Content {
     pub id: i64,
     pub body: Body,
+}
+
+impl Content {
+    pub fn by_id<C>(id: i64, conn: &mut C) -> Result<Option<Self>, Error>
+    where
+        C: Connection<Backend = Pg> + LoadConnection,
+    {
+        Ok(contents::table
+            .filter(contents::id.eq(id))
+            .select(contents::all_columns)
+            .get_result(conn)
+            .optional()?)
+    }
 }
 
 #[derive(Insertable)]

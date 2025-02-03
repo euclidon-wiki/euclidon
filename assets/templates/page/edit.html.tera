@@ -14,6 +14,16 @@
 
 {% block page_main -%}
 <form id="page-edit-form" action="?action=submit" method="post">
-  <textarea id="page-edit-textarea">{{ page.content }}</textarea>
+  <div id="page-editor">
+    <div id="page-editor-utils">
+    </div>
+    <div id="page-editor-main">
+      <textarea id="page-edit-textarea">{{ page.content }}</textarea>
+    </div>
+  </div>
+
+  <div id="page-edit-buttons">
+    <input id="page-edit-submit" type="submit">
+  </div>
 </form>
 {%- endblock page_main %}

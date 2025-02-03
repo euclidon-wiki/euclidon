@@ -1,6 +1,6 @@
 {% extends "index" %}
 
-{% block title -%} {{ page.title }} &ndash; {{ site.title }} {%- endblock title %}
+{% block title -%} {{ page.title.display }} &ndash; {{ site.title }} {%- endblock title %}
 
 {% block head %}
 {{ super() }}

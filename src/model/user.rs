@@ -120,7 +120,7 @@ impl<'a> NewUser<'a> {
     }
 }
 
-#[derive(Insertable)]
+#[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = user_sessions, check_for_backend(Pg))]
 pub struct Session {
     pub token: String,
@@ -129,6 +129,17 @@ pub struct Session {
 }
 
 impl Session {
+    pub fn from_token<C>(token: &str, conn: &mut C) -> Result<Option<Self>, Error>
+    where
+        C: Connection<Backend = Pg> + LoadConnection,
+    {
+        Ok(user_sessions::table
+            .filter(user_sessions::token.eq(token))
+            .select(user_sessions::all_columns)
+            .get_result(conn)
+            .optional()?)
+    }
+
     pub fn generate<C>(
         user_id: i64,
         expire_on: Option<DateTime<Utc>>,
@@ -164,7 +175,7 @@ impl Session {
 
         Ok(loop {
             let mut buf = [0; 16];
-            TOKEN_RAND.with(|rand| rand.write().expect("RWLock poisoned").fill_bytes(&mut buf));
+            TOKEN_RAND.with(|rand| rand.write().expect("RwLock poisoned").fill_bytes(&mut buf));
             let token = BASE64_URL_SAFE.encode(buf);
 
             if Self::exists(&token, conn)? {
@@ -183,6 +194,10 @@ impl Session {
             .filter(user_sessions::token.eq(token))
             .count()
             .get_result::<i64>(conn)?)
+    }
+
+    pub fn is_expired(&self, now: DateTime<Utc>) -> bool {
+        self.expire_on.is_some_and(|ts| now > ts)
     }
 }
 
