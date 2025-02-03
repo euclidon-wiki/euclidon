@@ -12,8 +12,8 @@ use rand_core::{RngCore, SeedableRng};
 
 use super::hash::{Algorithm, HashError, Hasher};
 
-#[derive(Debug, Clone, AsExpression, FromSqlRow, Default)]
-#[diesel(sql_type = Binary)]
+#[derive(Debug, Clone, Default, AsExpression, FromSqlRow)]
+#[diesel(sql_type = Binary, check_for_backend(Pg))]
 pub enum Password {
     V1(PasswordV1),
 

@@ -16,58 +16,8 @@ use crate::{
     Error,
 };
 
-#[derive(Insertable)]
-#[diesel(table_name = users)]
-pub struct Signup<'a> {
-    pub name: &'a str,
-    pub email: &'a str,
-    #[diesel(serialize_as = Password)]
-    pub password: &'a str,
-    pub created_on: DateTime<Utc>,
-    pub updated_on: DateTime<Utc>,
-}
-
-impl<'a> Signup<'a> {
-    pub fn new(
-        name: &'a str,
-        email: &'a str,
-        password: &'a str,
-        created_on: Option<DateTime<Utc>>,
-    ) -> Self {
-        let created_on = created_on.unwrap_or_else(|| Utc::now());
-        Self {
-            name,
-            email,
-            password,
-            created_on,
-            updated_on: created_on,
-        }
-    }
-
-    pub fn has_conflict<C>(&self, conn: &mut C) -> Result<bool, Error>
-    where
-        C: Connection<Backend = Pg> + LoadConnection,
-    {
-        Ok(0 != users::table
-            .filter(users::name.eq(self.name).or(users::email.eq(self.email)))
-            .count()
-            .get_result::<i64>(conn)?)
-    }
-
-    pub fn insert<C>(self, conn: &mut C) -> Result<bool, Error>
-    where
-        C: Connection<Backend = Pg> + LoadConnection,
-    {
-        Ok(!self.has_conflict(conn)?
-            && 0 != self
-                .insert_into(users::table)
-                .on_conflict_do_nothing()
-                .execute(conn)?)
-    }
-}
-
 #[derive(Selectable, Queryable)]
-#[diesel(table_name = users)]
+#[diesel(check_for_backend(Pg))]
 pub struct User {
     pub id: i64,
     pub name: String,
@@ -78,7 +28,7 @@ pub struct User {
 }
 
 impl User {
-    pub fn from_name<C>(name: &str, conn: &mut C) -> Result<Option<Self>, Error>
+    pub fn by_name<C>(name: &str, conn: &mut C) -> Result<Option<Self>, Error>
     where
         C: Connection<Backend = Pg> + LoadConnection,
     {
@@ -88,7 +38,7 @@ impl User {
             .optional()?)
     }
 
-    pub fn from_email<C>(email: &str, conn: &mut C) -> Result<Option<Self>, Error>
+    pub fn by_email<C>(email: &str, conn: &mut C) -> Result<Option<Self>, Error>
     where
         C: Connection<Backend = Pg> + LoadConnection,
     {
@@ -121,7 +71,57 @@ impl User {
 }
 
 #[derive(Insertable)]
-#[diesel(table_name = user_sessions)]
+#[diesel(table_name = users, check_for_backend(Pg))]
+pub struct NewUser<'a> {
+    pub name: &'a str,
+    pub email: &'a str,
+    #[diesel(serialize_as = Password)]
+    pub password: &'a str,
+    pub created_on: DateTime<Utc>,
+    pub updated_on: DateTime<Utc>,
+}
+
+impl<'a> NewUser<'a> {
+    pub fn new(
+        name: &'a str,
+        email: &'a str,
+        password: &'a str,
+        created_on: Option<DateTime<Utc>>,
+    ) -> Self {
+        let created_on = created_on.unwrap_or_else(|| Utc::now());
+        Self {
+            name,
+            email,
+            password,
+            created_on,
+            updated_on: created_on,
+        }
+    }
+
+    pub fn has_conflict<C>(&self, conn: &mut C) -> Result<bool, Error>
+    where
+        C: Connection<Backend = Pg> + LoadConnection,
+    {
+        Ok(0 != users::table
+            .filter(users::name.eq(self.name).or(users::email.eq(self.email)))
+            .count()
+            .get_result::<i64>(conn)?)
+    }
+
+    pub fn insert<C>(self, conn: &mut C) -> Result<User, Error>
+    where
+        C: Connection<Backend = Pg> + LoadConnection,
+    {
+        Ok(self
+            .insert_into(users::table)
+            .on_conflict_do_nothing()
+            .returning(users::all_columns)
+            .get_result(conn)?)
+    }
+}
+
+#[derive(Queryable, Selectable, Insertable)]
+#[diesel(table_name = user_sessions, check_for_backend(Pg))]
 pub struct Session {
     pub token: String,
     pub user_id: i64,
@@ -129,6 +129,17 @@ pub struct Session {
 }
 
 impl Session {
+    pub fn from_token<C>(token: &str, conn: &mut C) -> Result<Option<Self>, Error>
+    where
+        C: Connection<Backend = Pg> + LoadConnection,
+    {
+        Ok(user_sessions::table
+            .filter(user_sessions::token.eq(token))
+            .select(user_sessions::all_columns)
+            .get_result(conn)
+            .optional()?)
+    }
+
     pub fn generate<C>(
         user_id: i64,
         expire_on: Option<DateTime<Utc>>,
@@ -164,7 +175,7 @@ impl Session {
 
         Ok(loop {
             let mut buf = [0; 16];
-            TOKEN_RAND.with(|rand| rand.write().expect("RWLock poisoned").fill_bytes(&mut buf));
+            TOKEN_RAND.with(|rand| rand.write().expect("RwLock poisoned").fill_bytes(&mut buf));
             let token = BASE64_URL_SAFE.encode(buf);
 
             if Self::exists(&token, conn)? {
@@ -184,6 +195,10 @@ impl Session {
             .count()
             .get_result::<i64>(conn)?)
     }
+
+    pub fn is_expired(&self, now: DateTime<Utc>) -> bool {
+        self.expire_on.is_some_and(|ts| now > ts)
+    }
 }
 
 pub fn cleanup_sessions(db: &Db, now: DateTime<Utc>) -> Result<bool, Error> {
@@ -196,26 +211,4 @@ pub fn cleanup_sessions(db: &Db, now: DateTime<Utc>) -> Result<bool, Error> {
         ),
     )
     .execute(&mut conn)?)
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::{app::Config, db::Db, Error};
-
-    use super::Signup;
-
-    #[test]
-    fn insert_user_test() -> Result<(), Error> {
-        dotenvy::dotenv()?;
-        let name = "ahraman1";
-        let email = "ahraman1.programming@gmail.com";
-        let password = "123456";
-        let user = Signup::new(name, email, password, None);
-        let config = Config::load()?;
-        let db = Db::new(&config)?;
-        let res = user.insert(&mut db.pool.get()?)?;
-        println!("{}", if res { "success" } else { "failure" });
-
-        Ok(())
-    }
 }

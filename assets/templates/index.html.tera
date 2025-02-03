@@ -1,0 +1,19 @@
+{% block document %}
+<!DOCTYPE html>
+<html>
+  <head>
+    {% block head %}
+    <meta charset="UTF-8">
+
+    <title>{% block title %}index{% endblock title %}</title>
+
+    <link rel="stylesheet" href="/assets/styles/main.css">
+    {% endblock head %}
+  </head>
+  <body>
+    {%block body %}
+    <p>Hello, world!</p>
+    {% endblock body %}
+  </body>
+</html>
+{% endblock document %}

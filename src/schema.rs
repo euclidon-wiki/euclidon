@@ -1,6 +1,34 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    contents (id) {
+        id -> Int8,
+        body -> Bytea,
+    }
+}
+
+diesel::table! {
+    pages (id) {
+        id -> Int8,
+        #[max_length = 255]
+        title -> Varchar,
+        rev_id -> Int8,
+        root_id -> Int8,
+        created_on -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    revisions (id) {
+        id -> Int8,
+        parent_id -> Nullable<Int8>,
+        content_id -> Int8,
+        user_id -> Int8,
+        created_on -> Timestamptz,
+    }
+}
+
+diesel::table! {
     user_sessions (token) {
         #[max_length = 24]
         token -> Varchar,
@@ -22,9 +50,14 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(revisions -> contents (content_id));
+diesel::joinable!(revisions -> users (user_id));
 diesel::joinable!(user_sessions -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    contents,
+    pages,
+    revisions,
     user_sessions,
     users,
 );

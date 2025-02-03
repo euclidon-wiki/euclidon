@@ -1,0 +1,29 @@
+{% extends "page/base" %}
+
+{% block head %}
+{{ super() -}}
+
+<link rel="stylesheet" href="/assets/styles/page/edit.css">
+{% endblock head%}
+
+{% block body %}
+{{ super() -}}
+
+<script src="/assets/scripts/simple-page-editor.js"></script>
+{% endblock body %}
+
+{% block page_main -%}
+<form id="page-edit-form" action="?action=submit" method="post">
+  <div id="page-editor">
+    <div id="page-editor-utils">
+    </div>
+    <div id="page-editor-main">
+      <textarea id="page-edit-textarea" name="content">{{ page.content }}</textarea>
+    </div>
+  </div>
+
+  <div id="page-edit-buttons">
+    <input id="page-edit-submit" type="submit">
+  </div>
+</form>
+{%- endblock page_main %}

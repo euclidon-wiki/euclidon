@@ -5,6 +5,7 @@ pub mod controllers;
 pub mod db;
 mod error;
 pub mod model;
+pub mod output;
 pub mod render;
 mod router;
 pub mod schema;

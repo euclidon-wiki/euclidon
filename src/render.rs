@@ -35,6 +35,26 @@ impl Renderer {
                 "login".to_string(),
                 "templates/login.html.tera".to_string(),
             )?,
+            Self::load_template(
+                assets,
+                "page/base".to_string(),
+                "templates/page/base.html.tera".to_string(),
+            )?,
+            Self::load_template(
+                assets,
+                "page/view".to_string(),
+                "templates/page/view.html.tera".to_string(),
+            )?,
+            Self::load_template(
+                assets,
+                "page/edit".to_string(),
+                "templates/page/edit.html.tera".to_string(),
+            )?,
+            Self::load_template(
+                assets,
+                "page/not-found".to_string(),
+                "templates/page/not-found.html.tera".to_string(),
+            )?,
         ])?;
 
         Ok(tera)
