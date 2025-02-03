@@ -1,0 +1,13 @@
+#page-edit-textarea {
+    display: flex;
+
+    width: 90%;
+    max-width: 1200px;
+    min-height: 800px;
+
+    margin: 10px auto;
+
+    padding: 4px 5px;
+
+    resize: none;
+}
