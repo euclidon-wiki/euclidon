@@ -40,6 +40,8 @@ impl Deref for AppState {
 }
 
 pub struct Config {
+    pub title: String,
+
     pub server_url: String,
     pub database_url: String,
 
@@ -64,15 +66,19 @@ mod detail {
 
     #[derive(Default)]
     pub struct ConfigBuilder {
-        server_url: Option<String>,
-        database_url: Option<String>,
+        pub title: Option<String>,
 
-        assets_dir: Option<PathBuf>,
+        pub server_url: Option<String>,
+        pub database_url: Option<String>,
+
+        pub assets_dir: Option<PathBuf>,
     }
 
     impl ConfigBuilder {
         pub fn build(self) -> Result<Config, Error> {
             Ok(Config {
+                title: self.title.unwrap_or_else(|| "Euclidon".to_string()),
+
                 server_url: self
                     .server_url
                     .map_or_else(|| std::env::var("SERVER_URL"), Ok)?,
@@ -80,23 +86,26 @@ mod detail {
                     .database_url
                     .map_or_else(|| std::env::var("DATABASE_URL"), Ok)?,
 
-                assets_dir: self
-                    .assets_dir
-                    .unwrap_or_else(|| PathBuf::from("assets/")),
+                assets_dir: self.assets_dir.unwrap_or_else(|| PathBuf::from("assets/")),
             })
         }
 
-        pub fn server_url(mut self, server_url: String) -> Self {
+        pub fn with_title(mut self, server_url: String) -> Self {
             self.server_url = Some(server_url);
             self
         }
 
-        pub fn database_url(mut self, database_url: String) -> Self {
+        pub fn with_server_url(mut self, server_url: String) -> Self {
+            self.server_url = Some(server_url);
+            self
+        }
+
+        pub fn with_database_url(mut self, database_url: String) -> Self {
             self.database_url = Some(database_url);
             self
         }
 
-        pub fn assets_dir(mut self, assets_dir: PathBuf) -> Self {
+        pub fn with_assets_dir(mut self, assets_dir: PathBuf) -> Self {
             self.assets_dir = Some(assets_dir);
             self
         }
